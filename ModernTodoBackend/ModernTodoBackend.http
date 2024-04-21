@@ -1,0 +1,6 @@
+@ModernTodoBackend_HostAddress = http://localhost:5004
+
+GET {{ModernTodoBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
