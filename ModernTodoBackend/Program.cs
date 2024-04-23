@@ -1,5 +1,10 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ModernTodoBackend.Configurations.Services;
 using ModernTodoBackend.Data;
+using ModernTodoBackend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +16,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add database configurations to services DI container
-var defaultDbConnection = builder.Configuration.GetConnectionString("Default") ??
-                          throw new InvalidOperationException("Default database connection string was not found");
-builder.Services.AddDbContext<ApplicationDbContext>(options => { options.UseSqlServer(defaultDbConnection);});
+builder.Services.AddDatabaseService(builder.Configuration);
+
+// Add authorization to services DI container
+builder.Services.AddAuthorization();
+
+// Add identity api endpoints to service DI container
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 var app = builder.Build();
 
@@ -28,6 +37,25 @@ else
 {
     app.UseExceptionHandler("/error");
 }
+
+// Add identity endpoints to middleware pipeline
+app.MapGroup("/Account").MapIdentityApi<ApplicationUser>();
+
+app.MapGet("Account/logout", async (SignInManager<ApplicationUser> signInManager) =>
+{
+    // Additional endpoint for the base identity endpoints to log out user
+    await signInManager.SignOutAsync();
+    return Results.Ok();
+}).RequireAuthorization();
+
+app.MapGet("Account/getAuthenticatedUserEmail", (ClaimsPrincipal user) =>
+{
+    // Additional endpoint for the base identity endpoints to get authenticated user email
+    var userEmail = user.FindFirstValue(ClaimTypes.Email) ??
+                    throw new InvalidOperationException("User email can not be found");
+    return Results.Json(new { email = userEmail });
+}).RequireAuthorization();
+
 
 app.UseHttpsRedirection();
 

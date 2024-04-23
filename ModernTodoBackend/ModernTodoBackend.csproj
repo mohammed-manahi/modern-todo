@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Configurations\Middlewares\" />
       <Folder Include="Controllers\" />
     </ItemGroup>
 
