@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using ModernTodoBackend.Configurations.Services;
 using ModernTodoBackend.Data;
 using ModernTodoBackend.Models;
+using ModernTodoBackend.Services;
+using ModernTodoBackend.Settings;
+using IEmailSender = Microsoft.AspNetCore.Identity.UI.Services.IEmailSender;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +25,22 @@ builder.Services.AddDatabaseService(builder.Configuration);
 builder.Services.AddAuthorization();
 
 // Add identity api endpoints to service DI container
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+    options.SignIn.RequireConfirmedEmail = true;
+}).AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Add mail provider to service DI container
+builder.Services.AddTransient<IMailProviderService, MailProviderService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Add smtp mail provider configuration
+builder.Services.Configure<SmtpMailProviderSettings>(builder.Configuration.GetSection("SmtpMailProvider"));
 
 var app = builder.Build();
 
