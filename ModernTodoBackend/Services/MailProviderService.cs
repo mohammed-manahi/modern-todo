@@ -35,9 +35,9 @@ public class MailProviderService : IMailProviderService
             {
                 await emailClient.SendMailAsync(emailMessage);
             }
-            catch (InvalidOperationException invalidOperationException)
+            catch (SmtpException smtpException)
             {
-                _logger.LogError(invalidOperationException.Message);
+                _logger.LogError(smtpException.Message);
             }
         }
     }

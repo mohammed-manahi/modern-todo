@@ -30,9 +30,9 @@ public class EmailSender : IEmailSender
         {
             await _mailProviderService.SendAsync(emailMessage.To.ToString(), emailMessage.Subject, emailMessage.Body);
         }
-        catch (InvalidOperationException invalidOperationException)
+        catch (SmtpException smtpException)
         {
-            _logger.LogError(invalidOperationException.Message);
+            _logger.LogError(smtpException.Message);
         }
     }
 }
