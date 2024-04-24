@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ModernTodoBackend.Configurations.Services;
 using ModernTodoBackend.Data;
 using ModernTodoBackend.Models;
+using ModernTodoBackend.Repositories;
 using ModernTodoBackend.Services;
 using ModernTodoBackend.Settings;
 using IEmailSender = Microsoft.AspNetCore.Identity.UI.Services.IEmailSender;
@@ -41,6 +42,9 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 // Add smtp mail provider configuration
 builder.Services.Configure<SmtpMailProviderSettings>(builder.Configuration.GetSection("SmtpMailProvider"));
+
+// Add todo repository to services DI container
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 var app = builder.Build();
 
