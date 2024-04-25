@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using ModernTodoBackend.Data;
 using ModernTodoBackend.Models;
 using System.Linq.Dynamic.Core;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using ModernTodoBackend.DTO;
 
 namespace ModernTodoBackend.Repositories;
@@ -11,13 +13,18 @@ namespace ModernTodoBackend.Repositories;
 public class TodoRepository : ITodoRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public TodoRepository(ApplicationDbContext dbContext)
+    public TodoRepository(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor,
+        UserManager<ApplicationUser> userManager)
     {
         _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
+        _userManager = userManager;
     }
 
-    public async Task<IEnumerable<Todo?>> GetAll(int pageIndex = 0, int pageSize = 10, string sortColumn = "Name",
+    public async Task<IEnumerable<Todo>> GetAll(int pageIndex = 0, int pageSize = 10, string sortColumn = "Name",
         string sortOrder = "ASC", string filterQuery = null)
     {
         try
@@ -27,6 +34,7 @@ public class TodoRepository : ITodoRepository
             {
                 // Handle existing filter query
                 query = query
+                    .Where(q => q.IsDeleted == false)
                     .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
                                 q.Description.ToLower().Contains(filterQuery.ToLower()));
                 query = query
@@ -37,6 +45,7 @@ public class TodoRepository : ITodoRepository
             var recordCount = await query.CountAsync();
             // Handle empty filter query
             query = query
+                .Where(q => q.IsDeleted == false)
                 .Include(u => u.ApplicationUser)
                 .OrderBy($"{sortColumn} {sortOrder}")
                 .Skip(pageIndex * pageSize)
@@ -50,7 +59,7 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<IEnumerable<Todo?>> GetAllCompleted(int pageIndex = 0, int pageSize = 10,
+    public async Task<IEnumerable<Todo>> GetAllCompleted(int pageIndex = 0, int pageSize = 10,
         string sortColumn = "Name",
         string sortOrder = "ASC", string filterQuery = null)
     {
@@ -61,6 +70,7 @@ public class TodoRepository : ITodoRepository
             if (!string.IsNullOrEmpty(filterQuery))
             {
                 query = query
+                    .Where(q => q.IsDeleted == false)
                     .Where(t => t.IsCompleted == true)
                     .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
                                 q.Description.ToLower().Contains(filterQuery.ToLower()));
@@ -72,6 +82,7 @@ public class TodoRepository : ITodoRepository
             var recordCount = await query.CountAsync();
             // Handle empty filter query for completed tasks
             query = query
+                .Where(q => q.IsDeleted == false)
                 .Where(t => t.IsCompleted == true).Include(u => u.ApplicationUser)
                 .OrderBy($"{sortColumn} {sortOrder}")
                 .Skip(pageIndex * pageSize)
@@ -85,11 +96,12 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<Todo?> Get(int id)
+    public async Task<Todo> Get(int id)
     {
         try
         {
             return await _dbContext.Todos
+                .Where(q => q.IsDeleted == false)
                 .Include(u => u.ApplicationUser)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
@@ -103,7 +115,7 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<Todo?> Find(Expression<Func<Todo?, bool>> predicate)
+    public async Task<Todo> Find(Expression<Func<Todo, bool>> predicate)
     {
         try
         {
@@ -121,11 +133,25 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Add(Todo? entity)
+    public async Task Add(TodoDTO entityDto)
     {
         try
         {
-            await _dbContext.Todos.AddAsync(entity);
+            var userId = GetAuthenticatedUserId();
+            var applicationUser = await _userManager.FindByIdAsync(userId);
+            Todo todo = new Todo()
+            {
+                Name = entityDto.Name,
+                Description = entityDto.Description,
+                DueDate = entityDto.DueDate,
+                IsCompleted = entityDto.IsCompleted,
+                IsDeleted = false,
+                UserId = userId,
+                ApplicationUser = applicationUser,
+                CreatedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now
+            };
+            await _dbContext.Todos.AddAsync(todo);
             await SaveAsync();
         }
         catch (DbException dbException)
@@ -134,17 +160,24 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Update(TodoDTO? entityDto)
+    public async Task Update(TodoDTO entityDto)
     {
         try
         {
+            var userId = GetAuthenticatedUserId();
+            var applicationUser = await _userManager.FindByIdAsync(userId);
             var record = await _dbContext.Todos.Where(e => e.Id == entityDto.Id).FirstOrDefaultAsync();
-            if (record != null)
+            if (!record.IsDeleted)
             {
                 if (!string.IsNullOrEmpty(entityDto.Name)) record.Name = entityDto.Name;
                 if (!string.IsNullOrEmpty(entityDto.Description)) record.Description = entityDto.Description;
                 if (entityDto.DueDate.HasValue) record.DueDate = entityDto.DueDate.Value;
                 record.IsCompleted = entityDto.IsCompleted;
+                record.IsDeleted = false;
+                record.UserId = userId;
+                record.ApplicationUser = applicationUser;
+                record.CreatedDate = record.CreatedDate;
+                record.UpdatedDate = DateTime.Now;
                 _dbContext.Todos.Update(record);
                 await SaveAsync();
             }
@@ -155,12 +188,12 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Remove(int? id)
+    public async Task Remove(int id)
     {
         try
         {
             var record = await _dbContext.Todos.FirstOrDefaultAsync(e => e.Id == id);
-            if (record != null)
+            if (record != null && !record.IsDeleted )
             {
                 record.IsDeleted = true;
                 _dbContext.Todos.Update(record);
@@ -181,5 +214,16 @@ public class TodoRepository : ITodoRepository
     public void Dispose()
     {
         _dbContext.Dispose();
+    }
+
+    private string GetAuthenticatedUserId()
+    {
+        // Get currently authenticated user
+        var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            return userId;
+        }
+        return null;
     }
 }
