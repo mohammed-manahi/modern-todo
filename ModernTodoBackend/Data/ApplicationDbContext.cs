@@ -53,5 +53,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
-    public DbSet<Todo> Todos => Set<Todo>();
+    public DbSet<Todo?> Todos => Set<Todo>();
 }

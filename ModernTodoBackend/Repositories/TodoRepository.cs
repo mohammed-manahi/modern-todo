@@ -3,6 +3,8 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ModernTodoBackend.Data;
 using ModernTodoBackend.Models;
+using System.Linq.Dynamic.Core;
+using ModernTodoBackend.DTO;
 
 namespace ModernTodoBackend.Repositories;
 
@@ -15,11 +17,31 @@ public class TodoRepository : ITodoRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Todo>> GetAll()
+    public async Task<IEnumerable<Todo?>> GetAll(int pageIndex = 0, int pageSize = 10, string sortColumn = "Name",
+        string sortOrder = "ASC", string filterQuery = null)
     {
         try
         {
-            return await _dbContext.Todos.Include(u => u.ApplicationUser).AsNoTracking().ToListAsync();
+            var query = _dbContext.Todos.AsQueryable();
+            if (!string.IsNullOrEmpty(filterQuery))
+            {
+                // Handle existing filter query
+                query = query
+                    .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
+                                q.Description.ToLower().Contains(filterQuery.ToLower()));
+                query = query
+                    .Include(u => u.ApplicationUser)
+                    .AsNoTracking();
+            }
+            var recordCount = await query.CountAsync();
+            // Handle empty filter query
+            query = query
+                .Include(u => u.ApplicationUser)
+                .OrderBy($"{sortColumn} {sortOrder}")
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize)
+                .AsNoTracking();
+            return query;
         }
         catch (DbException dbException)
         {
@@ -27,13 +49,33 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<IEnumerable<Todo>> GetAllCompleted()
+    public async Task<IEnumerable<Todo?>> GetAllCompleted(int pageIndex = 0, int pageSize = 10,
+        string sortColumn = "Name",
+        string sortOrder = "ASC", string filterQuery = null)
     {
         try
         {
-            return await _dbContext.Todos.Include(u => u.ApplicationUser).Where(t => t.IsCompleted == true)
-                .AsNoTracking()
-                .ToListAsync();
+            // Handle existing filter query for completed tasks
+            var query = _dbContext.Todos.AsQueryable();
+            if (!string.IsNullOrEmpty(filterQuery))
+            {
+                query = query
+                    .Where(t => t.IsCompleted == true)
+                    .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
+                                q.Description.ToLower().Contains(filterQuery.ToLower()));
+                query = query
+                    .Include(u => u.ApplicationUser)
+                    .AsNoTracking();
+            }
+            var recordCount = await query.CountAsync();
+            // Handle empty filter query for completed tasks
+            query = query
+                .Where(t => t.IsCompleted == true).Include(u => u.ApplicationUser)
+                .OrderBy($"{sortColumn} {sortOrder}")
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize)
+                .AsNoTracking();
+            return query;
         }
         catch (DbException dbException)
         {
@@ -41,11 +83,13 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<Todo> Get(int id)
+    public async Task<Todo?> Get(int id)
     {
         try
         {
-            return await _dbContext.Todos.Include(u => u.ApplicationUser).FirstOrDefaultAsync(t => t.Id == id);
+            return await _dbContext.Todos
+                .Include(u => u.ApplicationUser)
+                .FirstOrDefaultAsync(t => t.Id == id);
         }
         catch (InvalidOperationException invalidOperationException)
         {
@@ -57,11 +101,13 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<Todo> Find(Expression<Func<Todo, bool>> predicate)
+    public async Task<Todo?> Find(Expression<Func<Todo?, bool>> predicate)
     {
         try
         {
-            return await _dbContext.Todos.Where(predicate).FirstOrDefaultAsync();
+            return await _dbContext.Todos
+                .Where(predicate)
+                .FirstOrDefaultAsync();
         }
         catch (InvalidOperationException invalidOperationException)
         {
@@ -73,7 +119,7 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Add(Todo entity)
+    public async Task Add(Todo? entity)
     {
         try
         {
@@ -85,12 +131,19 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Update(Todo entity)
+    public async Task Update(TodoDTO? entityDto)
     {
         try
         {
-            _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            var record = await _dbContext.Todos.Where(e => e.Id == entityDto.Id).FirstOrDefaultAsync();
+            if (record != null)
+            {
+                if (!string.IsNullOrEmpty(entityDto.Name)) record.Name = entityDto.Name;
+                if (!string.IsNullOrEmpty(entityDto.Description)) record.Description = entityDto.Description;
+                if (entityDto.DueDate.HasValue) record.DueDate = entityDto.DueDate.Value;
+                _dbContext.Todos.Update(record);
+                await _dbContext.SaveChangesAsync();
+            }
         }
         catch (DbUpdateException dbUpdateException)
         {
@@ -98,12 +151,16 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task Remove(Todo entity)
+    public async Task Remove(int? id)
     {
         try
         {
-            _dbContext.Todos.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            var record = await _dbContext.Todos.FirstOrDefaultAsync(e => e.Id == id);
+            if (record != null)
+            {
+                _dbContext.Todos.Remove(record);
+                await _dbContext.SaveChangesAsync();
+            }
         }
         catch (DbUpdateException dbUpdateException)
         {
