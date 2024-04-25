@@ -20,8 +20,14 @@ public class TodoController : ControllerBase
         _logger = logger;
         _todoRepository = todoRepository;
     }
-
-
+    
+    /// <summary>
+    /// Gets a list of all todos
+    /// </summary>
+    /// <remarks>
+    /// Request: GET api/Todo/GetAll
+    /// </remarks>
+    /// <returns>An enumerable collection of todos</returns>
     [HttpGet("GetAll")]
     public async Task<IActionResult> GetAll([FromQuery] int pageIndex = 0, int pageSize = 10,
         string sortColumn = "Name",
@@ -40,6 +46,13 @@ public class TodoController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Gets a list of all completed todos
+    /// </summary>
+    /// <remarks>
+    /// Request: GET api/Todo/GetAllCompleted
+    /// </remarks>
+    /// <returns>An enumerable collection of completed todos</returns>
     [HttpGet("GetAllCompleted")]
     public async Task<IActionResult> GetAllCompleted([FromQuery] int pageIndex = 0, int pageSize = 10,
         string sortColumn = "Name",
@@ -57,7 +70,14 @@ public class TodoController : ControllerBase
             return BadRequest();
         }
     }
-
+    
+    /// <summary>
+    /// Gets a single todo using id route parameter
+    /// </summary>
+    /// <remarks>
+    /// Request: GET api/Todo/Get/:id
+    /// </remarks>
+    /// <returns>A singular todo</returns>
     [HttpGet("Get/{id}")]
     public async Task<IActionResult> Get([FromRoute] int id)
     {
@@ -73,7 +93,14 @@ public class TodoController : ControllerBase
             return NotFound();
         }
     }
-
+    
+    /// <summary>
+    /// Create a new todo 
+    /// </summary>
+    /// <remarks>
+    /// Request: POST api/Todo/Create
+    /// </remarks>
+    /// <returns>No returns</returns>
     [HttpPost("Create")]
     public async Task<IActionResult> Post([FromBody] TodoDTO entityDto)
     {
@@ -89,16 +116,24 @@ public class TodoController : ControllerBase
             return BadRequest();
         }
     }
-
-    [HttpPut("Update")]
-    public async Task<IActionResult> Put([FromBody] TodoDTO entityDto)
+    
+    /// <summary>
+    /// Update an existing todo 
+    /// </summary>
+    /// <remarks>
+    /// Request: PUT api/Todo/Update/:id
+    /// </remarks>
+    /// <returns>A singular todo</returns>
+    [HttpPut("Update/{id}")]
+    public async Task<IActionResult> Put([FromRoute] int id, [FromBody] TodoDTO entityDto)
     {
         try
         {
             if (entityDto == null) return BadRequest();
+            if (entityDto.Id != id) return NotFound();
             if (!ModelState.IsValid) return Problem();
             await _todoRepository.Update(entityDto);
-            return Ok();
+            return Ok(entityDto);
         }
         catch (Exception exception)
         {
@@ -106,7 +141,14 @@ public class TodoController : ControllerBase
             return BadRequest();
         }
     }
-
+    
+    /// <summary>
+    /// Delete an existing to do (soft delete)
+    /// </summary>
+    /// <remarks>
+    /// Request: DELETE api/Todo/Delete/:id
+    /// </remarks>
+    /// <returns>No returns</returns>
     [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
