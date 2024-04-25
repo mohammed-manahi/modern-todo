@@ -33,6 +33,7 @@ public class TodoRepository : ITodoRepository
                     .Include(u => u.ApplicationUser)
                     .AsNoTracking();
             }
+
             var recordCount = await query.CountAsync();
             // Handle empty filter query
             query = query
@@ -67,6 +68,7 @@ public class TodoRepository : ITodoRepository
                     .Include(u => u.ApplicationUser)
                     .AsNoTracking();
             }
+
             var recordCount = await query.CountAsync();
             // Handle empty filter query for completed tasks
             query = query
@@ -124,6 +126,7 @@ public class TodoRepository : ITodoRepository
         try
         {
             await _dbContext.Todos.AddAsync(entity);
+            await SaveAsync();
         }
         catch (DbException dbException)
         {
@@ -141,8 +144,9 @@ public class TodoRepository : ITodoRepository
                 if (!string.IsNullOrEmpty(entityDto.Name)) record.Name = entityDto.Name;
                 if (!string.IsNullOrEmpty(entityDto.Description)) record.Description = entityDto.Description;
                 if (entityDto.DueDate.HasValue) record.DueDate = entityDto.DueDate.Value;
+                record.IsCompleted = entityDto.IsCompleted;
                 _dbContext.Todos.Update(record);
-                await _dbContext.SaveChangesAsync();
+                await SaveAsync();
             }
         }
         catch (DbUpdateException dbUpdateException)
@@ -158,14 +162,20 @@ public class TodoRepository : ITodoRepository
             var record = await _dbContext.Todos.FirstOrDefaultAsync(e => e.Id == id);
             if (record != null)
             {
-                _dbContext.Todos.Remove(record);
-                await _dbContext.SaveChangesAsync();
+                record.IsDeleted = true;
+                _dbContext.Todos.Update(record);
+                await SaveAsync();
             }
         }
         catch (DbUpdateException dbUpdateException)
         {
             throw new Exception("An error occured while deleting the data", dbUpdateException);
         }
+    }
+
+    public async Task<int> SaveAsync()
+    {
+        return await _dbContext.SaveChangesAsync();
     }
 
     public void Dispose()

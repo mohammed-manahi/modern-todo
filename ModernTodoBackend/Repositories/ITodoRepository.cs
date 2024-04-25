@@ -21,4 +21,6 @@ public interface ITodoRepository : IDisposable
     public Task Update(TodoDTO? entityDto);
 
     public Task Remove(int? id);
+
+    public Task<int> SaveAsync();
 }
