@@ -29,11 +29,13 @@ public class TodoRepository : ITodoRepository
     {
         try
         {
+            var userId = GetAuthenticatedUserId();
             var query = _dbContext.Todos.AsQueryable();
             if (!string.IsNullOrEmpty(filterQuery))
             {
                 // Handle existing filter query
                 query = query
+                    .Where(q => q.UserId == userId)
                     .Where(q => q.IsDeleted == false)
                     .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
                                 q.Description.ToLower().Contains(filterQuery.ToLower()));
@@ -45,6 +47,7 @@ public class TodoRepository : ITodoRepository
             var recordCount = await query.CountAsync();
             // Handle empty filter query
             query = query
+                .Where(q => q.UserId == userId)
                 .Where(q => q.IsDeleted == false)
                 .Include(u => u.ApplicationUser)
                 .OrderBy($"{sortColumn} {sortOrder}")
@@ -60,9 +63,9 @@ public class TodoRepository : ITodoRepository
     }
 
     public async Task<IEnumerable<Todo>> GetAllCompleted(int pageIndex = 0, int pageSize = 10,
-        string sortColumn = "Name",
-        string sortOrder = "ASC", string filterQuery = null)
+        string sortColumn = "Name", string sortOrder = "ASC", string filterQuery = null)
     {
+        var userId = GetAuthenticatedUserId();
         try
         {
             // Handle existing filter query for completed tasks
@@ -70,6 +73,7 @@ public class TodoRepository : ITodoRepository
             if (!string.IsNullOrEmpty(filterQuery))
             {
                 query = query
+                    .Where(t => t.UserId == userId)
                     .Where(q => q.IsDeleted == false)
                     .Where(t => t.IsCompleted == true)
                     .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
@@ -82,6 +86,7 @@ public class TodoRepository : ITodoRepository
             var recordCount = await query.CountAsync();
             // Handle empty filter query for completed tasks
             query = query
+                .Where(t => t.UserId == userId)
                 .Where(q => q.IsDeleted == false)
                 .Where(t => t.IsCompleted == true).Include(u => u.ApplicationUser)
                 .OrderBy($"{sortColumn} {sortOrder}")
@@ -100,10 +105,20 @@ public class TodoRepository : ITodoRepository
     {
         try
         {
-            return await _dbContext.Todos
-                .Where(q => q.IsDeleted == false)
+            var userId = GetAuthenticatedUserId();
+            var record = await _dbContext.Todos
+                .Where(t => t.UserId == userId)
+                .Where(t => t.IsDeleted == false)
                 .Include(u => u.ApplicationUser)
                 .FirstOrDefaultAsync(t => t.Id == id);
+            if (record != null && record.UserId == userId && !record.IsDeleted)
+            {
+                return record;
+            }
+            else
+            {
+                throw new Exception("Invalid data fetch operation");
+            }
         }
         catch (InvalidOperationException invalidOperationException)
         {
@@ -166,8 +181,12 @@ public class TodoRepository : ITodoRepository
         {
             var userId = GetAuthenticatedUserId();
             var applicationUser = await _userManager.FindByIdAsync(userId);
-            var record = await _dbContext.Todos.Where(e => e.Id == entityDto.Id).FirstOrDefaultAsync();
-            if (!record.IsDeleted)
+            var record = await _dbContext.Todos
+                .Include(u => u.ApplicationUser)
+                .Where(c => c.IsDeleted == false)
+                .Where(e => e.Id == entityDto.Id)
+                .FirstOrDefaultAsync();
+            if (record != null && record.UserId == userId && !record.IsDeleted)
             {
                 if (!string.IsNullOrEmpty(entityDto.Name)) record.Name = entityDto.Name;
                 if (!string.IsNullOrEmpty(entityDto.Description)) record.Description = entityDto.Description;
@@ -181,6 +200,10 @@ public class TodoRepository : ITodoRepository
                 _dbContext.Todos.Update(record);
                 await SaveAsync();
             }
+            else
+            {
+                throw new Exception("Invalid data manipulation operation");
+            }
         }
         catch (DbUpdateException dbUpdateException)
         {
@@ -192,12 +215,19 @@ public class TodoRepository : ITodoRepository
     {
         try
         {
-            var record = await _dbContext.Todos.FirstOrDefaultAsync(e => e.Id == id);
-            if (record != null && !record.IsDeleted )
+            var userId = GetAuthenticatedUserId();
+            var record = await _dbContext.Todos
+                .Include(u => u.ApplicationUser)
+                .FirstOrDefaultAsync(e => e.Id == id);
+            if (record != null && record.UserId == userId && !record.IsDeleted)
             {
                 record.IsDeleted = true;
                 _dbContext.Todos.Update(record);
                 await SaveAsync();
+            }
+            else
+            {
+                throw new Exception("Invalid data manipulation operation");
             }
         }
         catch (DbUpdateException dbUpdateException)
@@ -224,6 +254,7 @@ public class TodoRepository : ITodoRepository
         {
             return userId;
         }
+
         return null;
     }
 }
