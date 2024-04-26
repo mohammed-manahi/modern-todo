@@ -40,13 +40,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Cascade);
         
         // Todo model validations
-        builder.Entity<Todo>(entityOpetions =>
+        builder.Entity<Todo>(entityOptions =>
         {
-            entityOpetions.HasKey(k => k.Id);
-            entityOpetions.Property(p => p.Name).HasMaxLength(50).IsRequired();
-            entityOpetions.Property(p => p.Description).HasMaxLength(250);
-            entityOpetions.Property(p => p.IsCompleted).HasDefaultValue(false);
-            entityOpetions.Property(p => p.IsDeleted).HasDefaultValue(false);
+            entityOptions.HasKey(k => k.Id);
+            entityOptions.Property(p => p.Name).HasMaxLength(50).IsRequired();
+            entityOptions.Property(p => p.Description).HasMaxLength(250);
+            entityOptions.Property(p => p.IsCompleted).HasDefaultValue(false);
+            entityOptions.Property(p => p.IsDeleted).HasDefaultValue(false);
         });
 
         base.OnModelCreating(builder);
