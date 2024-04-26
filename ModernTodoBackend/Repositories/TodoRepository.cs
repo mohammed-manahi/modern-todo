@@ -24,21 +24,20 @@ public class TodoRepository : ITodoRepository
         _userManager = userManager;
     }
 
-    public async Task<IEnumerable<Todo>> GetAll(int pageIndex = 0, int pageSize = 10, string sortColumn = "Name",
-        string sortOrder = "ASC", string filterQuery = null)
+    public async Task<IEnumerable<Todo>> GetAll(TodoRequestDTO input)
     {
         try
         {
             var userId = GetAuthenticatedUserId();
             var query = _dbContext.Todos.AsQueryable();
-            if (!string.IsNullOrEmpty(filterQuery))
+            if (!string.IsNullOrEmpty(input.FilterQuery))
             {
                 // Handle existing filter query
                 query = query
                     .Where(q => q.UserId == userId)
                     .Where(q => q.IsDeleted == false)
-                    .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
-                                q.Description.ToLower().Contains(filterQuery.ToLower()));
+                    .Where(q => q.Name.ToLower().Contains(input.FilterQuery.ToLower()) ||
+                                q.Description.ToLower().Contains(input.FilterQuery.ToLower()));
                 query = query
                     .Include(u => u.ApplicationUser)
                     .AsNoTracking();
@@ -50,9 +49,9 @@ public class TodoRepository : ITodoRepository
                 .Where(q => q.UserId == userId)
                 .Where(q => q.IsDeleted == false)
                 .Include(u => u.ApplicationUser)
-                .OrderBy($"{sortColumn} {sortOrder}")
-                .Skip(pageIndex * pageSize)
-                .Take(pageSize)
+                .OrderBy($"{input.SortColumn} {input.SortOrder}")
+                .Skip(input.PageIndex * input.PageSize)
+                .Take(input.PageSize)
                 .AsNoTracking();
             return query;
         }
@@ -62,22 +61,21 @@ public class TodoRepository : ITodoRepository
         }
     }
 
-    public async Task<IEnumerable<Todo>> GetAllCompleted(int pageIndex = 0, int pageSize = 10,
-        string sortColumn = "Name", string sortOrder = "ASC", string filterQuery = null)
+    public async Task<IEnumerable<Todo>> GetAllCompleted(TodoRequestDTO input)
     {
         var userId = GetAuthenticatedUserId();
         try
         {
             // Handle existing filter query for completed tasks
             var query = _dbContext.Todos.AsQueryable();
-            if (!string.IsNullOrEmpty(filterQuery))
+            if (!string.IsNullOrEmpty(input.FilterQuery))
             {
                 query = query
                     .Where(t => t.UserId == userId)
                     .Where(q => q.IsDeleted == false)
                     .Where(t => t.IsCompleted == true)
-                    .Where(q => q.Name.ToLower().Contains(filterQuery.ToLower()) ||
-                                q.Description.ToLower().Contains(filterQuery.ToLower()));
+                    .Where(q => q.Name.ToLower().Contains(input.FilterQuery.ToLower()) ||
+                                q.Description.ToLower().Contains(input.FilterQuery.ToLower()));
                 query = query
                     .Include(u => u.ApplicationUser)
                     .AsNoTracking();
@@ -89,9 +87,9 @@ public class TodoRepository : ITodoRepository
                 .Where(t => t.UserId == userId)
                 .Where(q => q.IsDeleted == false)
                 .Where(t => t.IsCompleted == true).Include(u => u.ApplicationUser)
-                .OrderBy($"{sortColumn} {sortOrder}")
-                .Skip(pageIndex * pageSize)
-                .Take(pageSize)
+                .OrderBy($"{input.SortColumn} {input.SortOrder}")
+                .Skip(input.PageIndex * input.PageSize)
+                .Take(input.PageSize)
                 .AsNoTracking();
             return query;
         }

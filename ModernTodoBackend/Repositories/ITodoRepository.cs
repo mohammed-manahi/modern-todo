@@ -6,11 +6,9 @@ namespace ModernTodoBackend.Repositories;
 
 public interface ITodoRepository : IDisposable
 {
-    public Task<IEnumerable<Todo>> GetAll(int pageIndex, int pageSize, string sortColumn, string sortOrder,
-        string filterQuery);
+    public Task<IEnumerable<Todo>> GetAll(TodoRequestDTO input);
 
-    public Task<IEnumerable<Todo>> GetAllCompleted(int pageIndex, int pageSize, string sortColumn, string sortOrder,
-        string filterQuery);
+    public Task<IEnumerable<Todo>> GetAllCompleted(TodoRequestDTO input);
 
     public Task<Todo> Get(int id);
 

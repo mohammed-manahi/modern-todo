@@ -29,13 +29,11 @@ public class TodoController : ControllerBase
     /// </remarks>
     /// <returns>An enumerable collection of todos</returns>
     [HttpGet("GetAll")]
-    public async Task<IActionResult> GetAll([FromQuery] int pageIndex = 0, int pageSize = 10,
-        string sortColumn = "Name",
-        string sortOrder = "ASC", string filterQuery = null)
+    public async Task<IActionResult> GetAll([FromQuery]TodoRequestDTO input)
     {
         try
         {
-            var result = await _todoRepository.GetAll(pageIndex, pageSize, sortColumn, sortOrder, filterQuery);
+            var result = await _todoRepository.GetAll(input);
             if (result == null) return BadRequest();
             return Ok(result);
         }
@@ -54,13 +52,11 @@ public class TodoController : ControllerBase
     /// </remarks>
     /// <returns>An enumerable collection of completed todos</returns>
     [HttpGet("GetAllCompleted")]
-    public async Task<IActionResult> GetAllCompleted([FromQuery] int pageIndex = 0, int pageSize = 10,
-        string sortColumn = "Name",
-        string sortOrder = "ASC", string filterQuery = null)
+    public async Task<IActionResult> GetAllCompleted([FromQuery] TodoRequestDTO input)
     {
         try
         {
-            var result = await _todoRepository.GetAllCompleted(pageIndex, pageSize, sortColumn, sortOrder, filterQuery);
+            var result = await _todoRepository.GetAllCompleted(input);
             if (result == null) return BadRequest();
             return Ok(result);
         }
