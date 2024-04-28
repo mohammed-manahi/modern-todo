@@ -1,5 +1,5 @@
 ﻿import {Group, Image, Title} from "@mantine/core";
-import classes from './Logo.module.css';
+import classes from "./Logo.module.css";
 import {NavLink} from "react-router-dom";
 
 function Logo() {

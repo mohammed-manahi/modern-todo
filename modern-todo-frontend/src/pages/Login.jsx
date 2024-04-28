@@ -1,10 +1,10 @@
 ﻿import Layout from "../ui/Layout.jsx";
-import classes from './Login.module.css';
+import AuthenticationForm from "../ui/AuthenticationForm.jsx";
 
 function Login() {
     return (
         <Layout>
-            <p>Login Component</p>
+            <AuthenticationForm/>
         </Layout>
     );
 }

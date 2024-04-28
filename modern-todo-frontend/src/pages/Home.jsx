@@ -1,10 +1,10 @@
 ﻿import Layout from "../ui/Layout.jsx";
-import classes from './Home.module.css';
+import HomeContent from "../ui/HomeContent.jsx";
 
 function Home() {
     return (
         <Layout>
-            <p>Home Component</p>
+            <HomeContent/>
         </Layout>
     );
 }

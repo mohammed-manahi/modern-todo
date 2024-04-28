@@ -1,8 +1,8 @@
-import Home from "./ui/Home.jsx";
-import Register from "./ui/Register.jsx";
-import Login from "./ui/Login.jsx";
-import NotFound from "./ui/NotFound.jsx";
-import Todo from "./ui/Todo.jsx";
+import Home from "./pages/Home.jsx";
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import Todo from "./pages/Todo.jsx";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {createTheme, MantineProvider} from '@mantine/core';
 import '@mantine/core/styles.css';
