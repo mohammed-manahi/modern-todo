@@ -54,6 +54,18 @@ builder.Services.Configure<SmtpMailProviderSettings>(builder.Configuration.GetSe
 // Add todo repository to services DI container
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
+// Add cors policy
+const string AllowedOrigins = "_AllowedOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowedOrigins, policy =>
+    {
+        policy.WithOrigins("http://localhost:6060");
+        policy.AllowAnyMethod();
+        policy.AllowAnyHeader(); 
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -88,6 +100,9 @@ app.MapGet("Account/getAuthenticatedUserEmail", (ClaimsPrincipal user) =>
 
 
 app.UseHttpsRedirection();
+
+// Add cors middleware to pipeline
+app.UseCors(AllowedOrigins);
 
 app.UseAuthorization();
 
