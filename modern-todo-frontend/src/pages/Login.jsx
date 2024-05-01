@@ -1,7 +1,7 @@
 ﻿import Layout from "../ui/Layout.jsx";
-import AuthenticationForm from "../ui/AuthenticationForm.jsx";
 import {useLocation} from "react-router-dom";
 import {showNotification} from "../utilities/notificationSystem.js";
+import AccountLogin from "../features/account/AccountLogin.jsx";
 
 function Login() {
     let location = useLocation();
@@ -10,7 +10,7 @@ function Login() {
     }
     return (
         <Layout>
-            <AuthenticationForm/>
+            <AccountLogin/>
         </Layout>
     );
 }

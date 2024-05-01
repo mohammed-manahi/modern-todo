@@ -3,13 +3,10 @@ import classes from "./HomeContent.module.css";
 import {NavLink} from "react-router-dom";
 import AlertArea from "./AlertArea.jsx";
 import {useColorScheme} from "@mantine/hooks";
-import Spinner from "./Spinner.jsx";
-import DialogModal from "./DialogModal.jsx";
 
 
 function HomeContent() {
     const colorScheme = useColorScheme();
-    
     return (
         <>
             <AlertArea title="Choose your theme" description={`Toggle your favorite theme using the icon in the nav bar.
@@ -30,7 +27,6 @@ function HomeContent() {
                             Crush your day, effortlessly.
                         </Text>
                     </Container>
-
                     <div className={classes.controls}>
                         <NavLink to="/login" className={classes.navLink}>
                             Login

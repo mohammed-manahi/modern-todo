@@ -1,36 +1,45 @@
-﻿import {useAccountContext, baseAccountUrl} from "./AccountContext.jsx";
+﻿import {useContext} from "react";
+import {baseAccountUrl, useAccountContext} from "./AccountContext.jsx";
 import {Form, useForm} from "react-hook-form";
-import {Button, Container, Paper, PasswordInput, Text, TextInput, Title, Notification, Space} from "@mantine/core";
-import classes from "../../ui/AuthenticationForm.module.css";
-import {NavLink, useNavigate} from "react-router-dom";
-import {yupResolver} from "@hookform/resolvers/yup"
-import * as yup from "yup"
-import Spinner from "../../ui/Spinner.jsx";
+import {yupResolver} from "@hookform/resolvers/yup";
+import {NavLink, useLocation, useNavigate} from "react-router-dom";
+import {handleResponseError} from "../../utilities/errorResponse.js";
 import {showNotification} from "../../utilities/notificationSystem.js";
-import {handleResponseError} from "../../utilities/errorResponse.js"
+import * as yup from "yup"
+import {Button, Checkbox, Container, Paper, PasswordInput, Space, Text, TextInput, Title} from "@mantine/core";
+import classes from "../../ui/AuthenticationForm.module.css";
+import Spinner from "../../ui/Spinner.jsx";
 
 // Validation schema using yup
 let schema = yup.object().shape({
     email: yup.string().email().required("Email is required"),
     password: yup.string().required("Password is required"),
-    confirmPassword: yup.string()
-        .oneOf([yup.ref("password"), null], "Passwords must match")
-        .required("Confirm Password is required"),
+    rememberMe: yup.boolean()
 });
 
-function AccountRegister() {
+function AccountLogin() {
     const {dispatch, isLoading} = useAccountContext();
-    // Add yup resolver for form validation
     const {handleSubmit, register, formState, control} = useForm({
         resolver: yupResolver(schema),
     });
     const {errors} = formState;
     const navigate = useNavigate();
-    
-    async function onRegisterAccount(data) {
+
+    let location = useLocation();
+    if (location.state !== null) {
+        showNotification("Info", location.state, "blue")
+    }
+
+    async function onLoginAccount(data) {
+        console.log(data);
+        let loginUrl = "";
         try {
             dispatch({type: "account/loading", payload: true});
-            const response = await fetch(`${baseAccountUrl}/register`, {
+            if (data.rememberMe === true)
+                loginUrl = "/login?useCookies=true";
+            else
+                loginUrl = "/login?useSessionCookies=true";
+            const response = await fetch(`${baseAccountUrl}${loginUrl}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json",},
                 body: JSON.stringify({
@@ -39,51 +48,48 @@ function AccountRegister() {
                 }),
             });
             dispatch({type: "account/loading", payload: false});
+            console.log(response)
             if (response.ok) {
-                navigate("/login", {state: "You need to activate your account. Please check your email inbox"});
+                navigate("/", {state: "Logged on successfully"});
             } else {
                 const errorData = await response.json();
                 handleResponseError(errorData);
             }
         } catch (error) {
             dispatch({type: "account/loading", payload: false});
-            showNotification("Error", "Internal server error", "red");
+            showNotification("Error", "Please enter a valid username and password and ensure your account is activated", "red");
         }
     }
+
     return (
         <Container size={420} my={40}>
             <Title ta="center" className={classes.title}>
-                Welcome
+                Welcome back!
             </Title>
             <Text c="dimmed" size="sm" ta="center" mt={5}>
-                Already have an account?{' '}
-                <NavLink to="/login">
-                    Login
+                Do not have an account yet?{' '}
+                <NavLink to="/register">
+                    Create account
                 </NavLink>
             </Text>
             {isLoading && <Spinner/>}
             <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-                <Form onSubmit={handleSubmit(onRegisterAccount)} control={control}>
+                <Form onSubmit={handleSubmit(onLoginAccount)} control={control}>
                     <TextInput id="email" name="email" label="Email" placeholder="Example@Email.com"
                                required {...register('email')}/>
                     {errors?.email?.message}
                     <PasswordInput id="password" name="password" label="Password" placeholder="Your password" required
                                    mt="md" {...register('password')}/>
                     {errors?.password?.message}
-                    <PasswordInput id="confirmPassword" name="confirmPassword" label="Confirm Password"
-                                   placeholder="Your password" required
-                                   mt="md" {...register('confirmPassword')}/>
-                    {errors?.confirmPassword?.message}
-
+                    <Space h={"sm"}/>
+                    <Checkbox label="Remember Me" name="rememberMe" id="rememberMe" {...register('rememberMe')}/>
                     <Button fullWidth mt="xl" type={"submit"} disabled={isLoading}>
-                        Register
+                        Login
                     </Button>
                 </Form>
             </Paper>
         </Container>
-
     );
-
 }
 
-export default AccountRegister;
+export default AccountLogin;
