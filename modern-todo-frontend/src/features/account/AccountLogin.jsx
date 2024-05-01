@@ -41,7 +41,8 @@ function AccountLogin() {
                 loginUrl = "/login?useSessionCookies=true";
             const response = await fetch(`${baseAccountUrl}${loginUrl}`, {
                 method: "POST",
-                headers: {"Content-Type": "application/json",},
+                credentials: "include",
+                headers: {"Content-Type": "application/json", "Access-Control-Allow-Credentials": true},
                 body: JSON.stringify({
                     email: data.email,
                     password: data.password,
