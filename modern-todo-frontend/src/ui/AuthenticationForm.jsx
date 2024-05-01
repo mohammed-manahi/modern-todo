@@ -1,15 +1,4 @@
-﻿import {
-    TextInput,
-    PasswordInput,
-    Checkbox,
-    Anchor,
-    Paper,
-    Title,
-    Text,
-    Container,
-    Group,
-    Button,
-} from "@mantine/core";
+﻿import {TextInput, PasswordInput, Checkbox, Anchor, Paper, Title, Text, Container, Group, Button,} from "@mantine/core";
 import classes from "./AuthenticationForm.module.css";
 import {NavLink} from "react-router-dom";
 
@@ -32,9 +21,7 @@ function AuthenticationForm({submitActionName = "Login"}) {
                         Login
                     </NavLink>
                 </Text>
-
             }
-
             <Paper withBorder shadow="md" p={30} mt={30} radius="md">
                 <TextInput label="Email" placeholder="Example@Email.com" required/>
                 <PasswordInput label="Password" placeholder="Your password" required mt="md"/>
