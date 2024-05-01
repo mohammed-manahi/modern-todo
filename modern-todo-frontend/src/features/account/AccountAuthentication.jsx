@@ -1,36 +1,36 @@
-﻿// import {baseAccountUrl, useAccountContext} from "./AccountContext.jsx";
-// import {handleResponseError} from "../../utilities/errorResponse.js";
-// import {showNotification} from "../../utilities/notificationSystem.js";
-//
-// function AccountAuthentication() {
-//     const {dispatch, isAuthenticated, isLoading} = useAccountContext();
-//
-//      function isUserAuthenticated() {
-//         try {
-//             dispatch({type: "account/loading", payload: true});
-//             const response = await fetch(`${baseAccountUrl}/manage/info`, {
-//                 method: "GET",
-//                 headers: {"Content-Type": "application/json",},
-//             });
-//             if (response.ok) {
-//                 dispatch({type: "account/authenticated", payload: true});
-//             } else {
-//                 const errorData = await response.json();
-//                 handleResponseError(errorData);
-//             }
-//         } catch (error) {
-//             dispatch({type: "account/loading", payload: false});
-//             showNotification("Error", "Internal server error", "red");
-//         }
-//
-//     }
-//
-//     const isUserLoggedIn = isUserAuthenticated();
-//     if (isUserLoggedIn) {
-//         return <div>Authenticated</div>
-//     } else {
-//         return <div>Not Authenticated</div>
-//     }
-// }
-//
-// export default AccountAuthentication;
+﻿import {useEffect, useState} from "react";
+
+function ProtectedInfoComponent() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        const checkAuth = async () => {
+            const response = await fetch("https://localhost:7092/Account/manage/info", {
+                method: "GET",
+                headers: {"accept": "application/json", "Authorization": `Bearer ${token}`, },
+            });
+            console.log("Response", response)
+            if (response.ok) {
+                const data = await response.json();
+                setIsLoggedIn(data);
+                console.log(data);
+            } else {
+                console.error("Failed to check authentication");
+            }
+        };
+        checkAuth();
+    }, []);
+
+    return (
+        <div>
+            {isLoggedIn ? (
+                <p>You are authenticated and can access protected info.</p>
+            ) : (
+                <p>Please login to access protected information.</p>
+            )}
+        </div>
+    );
+}
+
+export default ProtectedInfoComponent;

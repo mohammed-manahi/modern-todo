@@ -60,7 +60,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AllowedOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:6060");
+        policy.WithOrigins("http://localhost:6060", "https://localhost:6060");
         policy.AllowAnyMethod();
         policy.AllowAnyHeader();
         policy.AllowCredentials();
@@ -81,6 +81,9 @@ else
     app.UseExceptionHandler("/error");
 }
 
+// Add cors middleware to pipeline
+app.UseCors(AllowedOrigins);
+
 // Add identity endpoints to middleware pipeline
 app.MapGroup("/Account").MapIdentityApi<ApplicationUser>();
 
@@ -99,11 +102,7 @@ app.MapGet("Account/getAuthenticatedUserEmail", (ClaimsPrincipal user) =>
     return Results.Json(new { email = userEmail });
 }).RequireAuthorization();
 
-
 app.UseHttpsRedirection();
-
-// Add cors middleware to pipeline
-app.UseCors(AllowedOrigins);
 
 app.UseAuthorization();
 

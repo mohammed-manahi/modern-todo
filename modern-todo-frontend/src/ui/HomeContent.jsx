@@ -3,6 +3,7 @@ import classes from "./HomeContent.module.css";
 import {NavLink} from "react-router-dom";
 import AlertArea from "./AlertArea.jsx";
 import {useColorScheme} from "@mantine/hooks";
+import AccountAuthentication from "../features/account/AccountAuthentication.jsx";
 
 
 function HomeContent() {
@@ -37,6 +38,7 @@ function HomeContent() {
                         </NavLink>
                     </div>
                 </div>
+                <AccountAuthentication/>
             </Container>
         </>
     );

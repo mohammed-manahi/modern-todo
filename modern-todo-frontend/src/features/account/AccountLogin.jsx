@@ -31,14 +31,13 @@ function AccountLogin() {
     }
 
     async function onLoginAccount(data) {
-        console.log(data);
         let loginUrl = "";
         try {
             dispatch({type: "account/loading", payload: true});
             if (data.rememberMe === true)
-                loginUrl = "/login?useCookies=true";
+                loginUrl = "/login?useCookies=false";
             else
-                loginUrl = "/login?useSessionCookies=true";
+                loginUrl = "/login?useSessionCookies=false";
             const response = await fetch(`${baseAccountUrl}${loginUrl}`, {
                 method: "POST",
                 credentials: "include",
@@ -49,8 +48,10 @@ function AccountLogin() {
                 }),
             });
             dispatch({type: "account/loading", payload: false});
-            console.log(response)
             if (response.ok) {
+                const data = await response.json();
+                console.log(data.tokenType);
+                localStorage.setItem('accessToken', data.accessToken);
                 navigate("/", {state: "Logged on successfully"});
             } else {
                 const errorData = await response.json();
