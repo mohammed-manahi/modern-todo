@@ -1,14 +1,13 @@
-﻿import {useContext} from "react";
+﻿import {useContext, useEffect} from "react";
 import {baseAccountUrl, useAccountContext} from "./AccountContext.jsx";
 import {Form, useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {NavLink, useLocation, useNavigate} from "react-router-dom";
-import {handleResponseError} from "../../utilities/errorResponse.js";
-import {showNotification} from "../../utilities/notificationSystem.js";
 import * as yup from "yup"
 import {Button, Checkbox, Container, Paper, PasswordInput, Space, Text, TextInput, Title} from "@mantine/core";
 import classes from "../../ui/AuthenticationForm.module.css";
 import Spinner from "../../ui/Spinner.jsx";
+import {notifications} from "@mantine/notifications";
 
 // Validation schema using yup
 let schema = yup.object().shape({
@@ -26,22 +25,24 @@ function AccountLogin() {
     const navigate = useNavigate();
 
     let location = useLocation();
-    if (location.state !== null) {
-        showNotification("Info", location.state, "blue")
-    }
+    useEffect(() => {
+        // Receive account need confirmation notification
+        if (location.state !== null) {
+            notifications.show({
+                title: "Info",
+                message: location.state,
+                color: "blue"
+            });
+        }
+    }, [location]);
 
     async function onLoginAccount(data) {
-        let loginUrl = "";
+        const loginUrl = "/login?useCookies=false&useSessionCookies=false";
         try {
             dispatch({type: "account/loading", payload: true});
-            if (data.rememberMe === true)
-                loginUrl = "/login?useCookies=false";
-            else
-                loginUrl = "/login?useSessionCookies=false";
             const response = await fetch(`${baseAccountUrl}${loginUrl}`, {
                 method: "POST",
-                credentials: "include",
-                headers: {"Content-Type": "application/json", "Access-Control-Allow-Credentials": true},
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     email: data.email,
                     password: data.password,
@@ -52,14 +53,25 @@ function AccountLogin() {
                 const data = await response.json();
                 console.log(data.tokenType);
                 localStorage.setItem('accessToken', data.accessToken);
-                navigate("/", {state: "Logged on successfully"});
+                dispatch({type: "account/login"})
+                navigate("/todo", {state: "Logged on successfully"});
             } else {
                 const errorData = await response.json();
-                handleResponseError(errorData);
+                const errorKeys = Object.keys(errorData.errors);
+                errorKeys.forEach(errorKey => {
+                    const errorMessages = errorData.errors[errorKey];
+                    errorMessages.forEach(errorMessage => {
+                        notifications.show({title: "Error", message: errorMessage, color: "red"});
+                    });
+                });
             }
         } catch (error) {
             dispatch({type: "account/loading", payload: false});
-            showNotification("Error", "Please enter a valid username and password and ensure your account is activated", "red");
+            notifications.show({
+                title: "Error",
+                message: "Please enter a valid username and password and ensure your account is activated",
+                color: "red"
+            });
         }
     }
 

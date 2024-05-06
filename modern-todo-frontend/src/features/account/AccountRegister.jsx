@@ -6,8 +6,9 @@ import {NavLink, useNavigate} from "react-router-dom";
 import {yupResolver} from "@hookform/resolvers/yup"
 import * as yup from "yup"
 import Spinner from "../../ui/Spinner.jsx";
-import {showNotification} from "../../utilities/notificationSystem.js";
 import {handleResponseError} from "../../utilities/errorResponse.js"
+import {notifications} from "@mantine/notifications";
+import {showNotification} from "../../utilities/notificationSystem.js";
 
 // Validation schema using yup
 let schema = yup.object().shape({
@@ -26,7 +27,7 @@ function AccountRegister() {
     });
     const {errors} = formState;
     const navigate = useNavigate();
-    
+
     async function onRegisterAccount(data) {
         try {
             dispatch({type: "account/loading", payload: true});
@@ -43,13 +44,24 @@ function AccountRegister() {
                 navigate("/login", {state: "You need to activate your account. Please check your email inbox"});
             } else {
                 const errorData = await response.json();
-                handleResponseError(errorData);
+                const errorKeys = Object.keys(errorData.errors);
+                errorKeys.forEach(errorKey => {
+                    const errorMessages = errorData.errors[errorKey];
+                    errorMessages.forEach(errorMessage => {
+                        notifications.show({title: "Error", message: errorMessage, color: "red"});
+                    });
+                });
             }
         } catch (error) {
             dispatch({type: "account/loading", payload: false});
-            showNotification("Error", "Internal server error", "red");
+            notifications.show({
+                title: "Error",
+                message: "Internal server error",
+                color: "red"
+            });
         }
     }
+
     return (
         <Container size={420} my={40}>
             <Title ta="center" className={classes.title}>

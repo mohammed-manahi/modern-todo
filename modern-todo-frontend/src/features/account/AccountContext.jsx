@@ -9,15 +9,18 @@ const initialState = {
     isEmailConfirmed: false,
     isAuthenticated: false,
     isLoading: false,
-    errors: {}
 }
 
 function reducer(state, action) {
     switch (action.type) {
         case "account/loading":
             return {...state, isLoading: action.payload};
+        case "account/login":
+            return {...state, isEmailConfirmed: true, isAuthenticated: true}
         case "account/authenticated":
-            return {...state, isAuthenticated: action.payload};
+            return {...state, email: action.payload, isEmailConfirmed: true, isAuthenticated: true};
+        case "account/logout":
+            return initialState;
         case "account/error":
             return {...state, errors: action.payload};
         default:
@@ -30,9 +33,9 @@ function AccountProvider({children}) {
     return (
         <AccountContext.Provider value={{
             dispatch: dispatch,
+            email: state.email,
             isEmailConfirmed: state.isEmailConfirmed,
             isAuthenticated: state.isAuthenticated,
-            errors: state.errors,
             isLoading: state.isLoading,
         }}>
             {children}

@@ -12,6 +12,7 @@ import "@mantine/core/styles.css";
 import '@mantine/notifications/styles.css';
 import "./App.css";
 import {Notifications} from "@mantine/notifications";
+import AuthenticationCheck from "./features/account/AuthenticationCheck.jsx";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ function App() {
             <Notifications position={"top-center"} zIndex={1000}/>
             {/* React query client provider */}
             <AccountProvider>
+                <AuthenticationCheck/>
                 <QueryClientProvider client={queryClient}>
                     <ReactQueryDevtools initialIsOpen={false}/>
                     {/* Define basic routes */}
@@ -30,6 +32,7 @@ function App() {
                             <Route path="/" element={<Home/>}/>
                             <Route path="register" element={<Register/>}/>
                             <Route path="login" element={<Login/>}/>
+                            <Route path="todo" element={<Todo/>} />
                             <Route path="*" element={<NotFound/>}/>
                         </Routes>
                     </BrowserRouter>

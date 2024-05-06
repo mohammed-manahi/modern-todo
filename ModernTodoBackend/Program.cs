@@ -87,7 +87,7 @@ app.UseCors(AllowedOrigins);
 // Add identity endpoints to middleware pipeline
 app.MapGroup("/Account").MapIdentityApi<ApplicationUser>();
 
-app.MapGet("Account/logout", async (SignInManager<ApplicationUser> signInManager) =>
+app.MapPost("Account/logout", async (SignInManager<ApplicationUser> signInManager) =>
 {
     // Additional endpoint for the base identity endpoints to log out user
     await signInManager.SignOutAsync();
