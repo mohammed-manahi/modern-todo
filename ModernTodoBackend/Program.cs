@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using ModernTodoBackend.Configurations.Services;
 using ModernTodoBackend.Data;
 using ModernTodoBackend.Models;
@@ -25,6 +26,32 @@ builder.Services.AddSwaggerGen(options =>
     // Enable xml documentation in the swagger ui
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
+    
+    // Add authorize to swagger ui
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        BearerFormat = "Bearer",
+        Scheme = "bearer",
+        Type = SecuritySchemeType.Http
+    });
+    
+    // Add security requirement globally for all endpoints
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme()
+            {
+                Reference = new OpenApiReference()
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            }, Array.Empty<string>()
+        }
+    });
 });
 
 // Add database configurations to services DI container
