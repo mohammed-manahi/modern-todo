@@ -51,10 +51,17 @@ function AccountLogin() {
             dispatch({type: "account/loading", payload: false});
             if (response.ok) {
                 const data = await response.json();
-                console.log(data.tokenType);
                 localStorage.setItem('accessToken', data.accessToken);
-                dispatch({type: "account/login"})
-                navigate("/todo", {state: "Logged on successfully"});
+                const emailResponse = await fetch("https://localhost:7092/Account/getAuthenticatedUserEmail", {
+                    method: "GET",
+                    headers: {"accept": "application/json", "Authorization": `Bearer ${data.accessToken}`,},
+                });
+                if (emailResponse.ok) {
+                    const emailData = await emailResponse.json();
+                    console.log(email);
+                    dispatch({type: "account/login", payload: emailData.email})
+                    navigate("/todo", {state: "Logged on successfully"});
+                }
             } else {
                 const errorData = await response.json();
                 const errorKeys = Object.keys(errorData.errors);

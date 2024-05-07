@@ -16,9 +16,7 @@ function reducer(state, action) {
         case "account/loading":
             return {...state, isLoading: action.payload};
         case "account/login":
-            return {...state, isEmailConfirmed: true, isAuthenticated: true}
-        case "account/authenticated":
-            return {...state, email: action.payload, isEmailConfirmed: true, isAuthenticated: true};
+            return {...state, isEmailConfirmed: true, isAuthenticated: true, email: action.payload}
         case "account/logout":
             return initialState;
         case "account/error":
