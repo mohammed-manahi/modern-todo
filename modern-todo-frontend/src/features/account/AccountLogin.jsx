@@ -1,8 +1,7 @@
-﻿import {useContext, useEffect} from "react";
-import {baseAccountUrl, useAccountContext} from "./AccountContext.jsx";
+﻿import {baseAccountUrl, useAccountContext} from "./AccountContext.jsx";
 import {Form, useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
-import {NavLink, useLocation, useNavigate} from "react-router-dom";
+import {NavLink, useNavigate} from "react-router-dom";
 import * as yup from "yup"
 import {Button, Checkbox, Container, Paper, PasswordInput, Space, Text, TextInput, Title} from "@mantine/core";
 import classes from "../../ui/AuthenticationForm.module.css";
@@ -23,19 +22,7 @@ function AccountLogin() {
     });
     const {errors} = formState;
     const navigate = useNavigate();
-
-    let location = useLocation();
-    useEffect(() => {
-        // Receive account need confirmation notification
-        if (location.state !== null) {
-            notifications.show({
-                title: "Info",
-                message: location.state,
-                color: "blue"
-            });
-        }
-    }, [location]);
-
+    
     async function onLoginAccount(data) {
         const loginUrl = "/login?useCookies=false&useSessionCookies=false";
         try {
@@ -58,7 +45,6 @@ function AccountLogin() {
                 });
                 if (emailResponse.ok) {
                     const emailData = await emailResponse.json();
-                    console.log(email);
                     dispatch({type: "account/login", payload: emailData.email})
                     navigate("/todo", {state: "Logged on successfully"});
                 }

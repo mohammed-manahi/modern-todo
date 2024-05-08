@@ -43,6 +43,7 @@ function AccountLogout() {
 
     return (
         <>
+            <NavLink className={classes.control} to={"/todo"} underline="never">To do</NavLink>
             {email}
             <Space w={"md"} />
             <Button variant="default" onClick={onLogoutAccount}>Logout</Button>

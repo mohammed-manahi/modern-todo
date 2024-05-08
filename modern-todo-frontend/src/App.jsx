@@ -12,6 +12,7 @@ import "@mantine/core/styles.css";
 import '@mantine/notifications/styles.css';
 import "./App.css";
 import {Notifications} from "@mantine/notifications";
+import ProtectedRoute from "./features/account/ProtectedRoute.jsx";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +31,10 @@ function App() {
                             <Route path="/" element={<Home/>}/>
                             <Route path="register" element={<Register/>}/>
                             <Route path="login" element={<Login/>}/>
-                            <Route path="todo" element={<Todo/>} />
+                            <Route path="todo" element={
+                                <ProtectedRoute>
+                                    <Todo/>
+                                </ProtectedRoute>}/>
                             <Route path="*" element={<NotFound/>}/>
                         </Routes>
                     </BrowserRouter>
