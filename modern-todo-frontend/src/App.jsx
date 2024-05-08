@@ -13,6 +13,7 @@ import '@mantine/notifications/styles.css';
 import "./App.css";
 import {Notifications} from "@mantine/notifications";
 import ProtectedRoute from "./features/account/ProtectedRoute.jsx";
+import {TodoProvider} from "./features/todo/TodoContext.jsx";
 
 const queryClient = new QueryClient();
 
@@ -23,22 +24,24 @@ function App() {
             <Notifications position={"top-center"} zIndex={1000}/>
             {/* React query client provider */}
             <AccountProvider>
-                <QueryClientProvider client={queryClient}>
-                    <ReactQueryDevtools initialIsOpen={false}/>
-                    {/* Define basic routes */}
-                    <BrowserRouter>
-                        <Routes>
-                            <Route path="/" element={<Home/>}/>
-                            <Route path="register" element={<Register/>}/>
-                            <Route path="login" element={<Login/>}/>
-                            <Route path="todo" element={
-                                <ProtectedRoute>
-                                    <Todo/>
-                                </ProtectedRoute>}/>
-                            <Route path="*" element={<NotFound/>}/>
-                        </Routes>
-                    </BrowserRouter>
-                </QueryClientProvider>
+                <TodoProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <ReactQueryDevtools initialIsOpen={false}/>
+                        {/* Define basic routes */}
+                        <BrowserRouter>
+                            <Routes>
+                                <Route path="/" element={<Home/>}/>
+                                <Route path="register" element={<Register/>}/>
+                                <Route path="login" element={<Login/>}/>
+                                <Route path="todo" element={
+                                    <ProtectedRoute>
+                                        <Todo/>
+                                    </ProtectedRoute>}/>
+                                <Route path="*" element={<NotFound/>}/>
+                            </Routes>
+                        </BrowserRouter>
+                    </QueryClientProvider>
+                </TodoProvider>
             </AccountProvider>
         </MantineProvider>
 

@@ -1,9 +1,10 @@
 ﻿import Layout from "../ui/Layout.jsx";
+import TodoGetAll from "../features/todo/TodoGetAll.jsx";
 
 function Todo() {
     return (
         <Layout>
-            <p>Todo Component</p>
+           <TodoGetAll/>
         </Layout>
     );
 }
