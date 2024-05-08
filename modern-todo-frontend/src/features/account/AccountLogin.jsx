@@ -39,7 +39,7 @@ function AccountLogin() {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('accessToken', data.accessToken);
-                const emailResponse = await fetch("https://localhost:7092/Account/getAuthenticatedUserEmail", {
+                const emailResponse = await fetch(`${baseAccountUrl}/getAuthenticatedUserEmail`, {
                     method: "GET",
                     headers: {"accept": "application/json", "Authorization": `Bearer ${data.accessToken}`,},
                 });
