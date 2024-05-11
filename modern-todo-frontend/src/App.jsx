@@ -15,7 +15,14 @@ import {Notifications} from "@mantine/notifications";
 import ProtectedRoute from "./features/account/ProtectedRoute.jsx";
 import {TodoProvider} from "./features/todo/TodoContext.jsx";
 
-const queryClient = new QueryClient();
+// Define query client with 1 minute stale time
+const queryClient = new QueryClient({
+    defaultOptions:{
+        queries: {
+            staleTime: 60 * 1000,
+        },
+    }
+});
 
 function App() {
     return (
@@ -25,6 +32,7 @@ function App() {
             {/* React query client provider */}
             <AccountProvider>
                 <TodoProvider>
+                    {/* Add query client provider for react query */}
                     <QueryClientProvider client={queryClient}>
                         <ReactQueryDevtools initialIsOpen={false}/>
                         {/* Define basic routes */}

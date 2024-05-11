@@ -2,7 +2,6 @@
 import {notifications} from "@mantine/notifications";
 import {useEffect} from "react";
 import Spinner from "../../ui/Spinner.jsx";
-import {Card} from "@mantine/core";
 
 let pageIndex = 0;
 let pageSize = 10;
@@ -10,7 +9,7 @@ let sortColumn = "Name";
 let sortOrder = "ASC";
 let filterQuery = "";
 
-function TodoGetAll() {
+function TodoList() {
     const {dispatch, todos, isLoading} = useTodoContext();
 
     useEffect(() => {
@@ -29,7 +28,6 @@ function TodoGetAll() {
             dispatch({type: "todo/loading", payload: false});
             if (response.ok) {
                 const data = await response.json();
-                console.log(data);
                 dispatch({type: "todo/getAll", payload: data});
             } else {
                 const errorData = await response.json();
@@ -61,4 +59,4 @@ function TodoGetAll() {
     );
 }
 
-export default TodoGetAll;
+export default TodoList;
