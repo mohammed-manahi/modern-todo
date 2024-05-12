@@ -14,7 +14,7 @@ import {
     Space,
     Kbd,
     Badge,
-    Autocomplete, Select, Button
+    Autocomplete, Select, Button, Grid, Stack
 } from "@mantine/core";
 import {IconSearch, IconArrowRight} from '@tabler/icons-react';
 import {Controller, Form, useForm} from "react-hook-form";
@@ -31,13 +31,13 @@ function TodoList() {
     // Define a state to manage sort column
     const [sortColumnValue, setSortColumnValue] = useState(sortColumn);
     const [sortOrderValue, setSortOrderValue] = useState(sortOrder);
-    
+
     // Invoke todo context hook 
     const {dispatch} = useTodoContext();
-    
+
     // Use react form hook for filtering and searching 
     const {handleSubmit, register, formState, control} = useForm();
-  
+
     // Use the query hook to define the query key and the function 
     const query = useQuery({
         queryKey: ["todo"],
@@ -101,43 +101,59 @@ function TodoList() {
             <AlertArea title="Tip for search use:" description={<Kbd>Enter</Kbd>}/>
             <Space h={"md"}/>
             <Form onSubmit={handleSubmit(onTodoSearchOrFilter)} control={control}>
-                <TextInput
-                    id="filterQuery" name="filterQuery"
-                    radius="xl" size="md" placeholder="Search title" rightSectionWidth={42}
-                    leftSection={<IconSearch style={{width: rem(18), height: rem(18)}} stroke={1.5}/>}
-                    {...register('filterQuery')}
-                />
-                <Controller
-                    name="sortColumn"
-                    control={control}
-                    render={({field}) => (
-                        <Select label="Sort by" placeholder="Pick value" value={field.value}
-                                onChange={(value) => {
-                                    field.onChange(value);
-                                    setSortColumnValue(value);
-                                }}
-                                data={[{label: 'Todo Name', value:'Name'}, {label: 'Todo Description', value:'Description'}, {label: 'Todo Due Date', value:'DueDate'}]}
-                                searchable
+                <Grid columns={24}>
+                    <Grid.Col span={8}>
+                        <TextInput
+                            id="filterQuery" name="filterQuery" label="Search"
+                            placeholder="Search title"
+                            leftSection={<IconSearch style={{width: rem(18), height: rem(18)}} stroke={1.5}/>}
+                            {...register('filterQuery')}
                         />
-                    )}
-                />
-                <Controller
-                    name="sortOrder"
-                    control={control}
-                    render={({field}) => (
-                        <Select label="Sort Order" placeholder="Pick value" value={field.value}
-                                onChange={(value) => {
-                                    field.onChange(value);
-                                    setSortOrderValue(value);
-                                }}
-                                data={[{label: 'Ascending', value: 'ASC'}, {label: 'Descending', value: 'DESC'}]}
-                                searchable
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                        <Controller
+                            name="sortColumn"
+                            control={control}
+                            render={({field}) => (
+                                <Select label="Sort by" placeholder="Pick value" value={field.value}
+                                        onChange={(value) => {
+                                            field.onChange(value);
+                                            setSortColumnValue(value);
+                                        }}
+                                        data={[{label: 'Todo Name', value: 'Name'}, {
+                                            label: 'Todo Description',
+                                            value: 'Description'
+                                        }, {label: 'Todo Due Date', value: 'DueDate'}]}
+                                        searchable
+                                />
+                            )}
                         />
-                    )}
-                />
-                <Button fullWidth mt="xl" type={"submit"} disabled={isFetching}>
-                    Apply
-                </Button>
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                        <Controller
+                            name="sortOrder"
+                            control={control}
+                            render={({field}) => (
+                                <Select label="Sort Order" placeholder="Pick value" value={field.value}
+                                        onChange={(value) => {
+                                            field.onChange(value);
+                                            setSortOrderValue(value);
+                                        }}
+                                        data={[{label: 'Ascending', value: 'ASC'}, {
+                                            label: 'Descending',
+                                            value: 'DESC'
+                                        }]}
+                                        searchable
+                                />
+                            )}
+                        />
+                    </Grid.Col>
+                    <Grid.Col span={4}>
+                        <Button fullWidth mt="25px" type={"submit"} disabled={isFetching}>
+                            Apply
+                        </Button>
+                    </Grid.Col>
+                </Grid>
             </Form>
             <Space h={"xl"}/>
             {todos.length === 0 ? <EmptyContent/> :
