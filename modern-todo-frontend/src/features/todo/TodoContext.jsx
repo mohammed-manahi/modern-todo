@@ -9,7 +9,6 @@ const initialState = {
     isLoading: "",
     status: "",
     error: "",
-
 }
 
 function reducer(state, action) {
@@ -35,7 +34,7 @@ function TodoProvider({children}) {
             todos: state.todos,
             isLoading: state.isLoading,
             status: state.status,
-            error: state.error
+            error: state.error,
         }}>
             {children}
         </TodoContext.Provider>
