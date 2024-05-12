@@ -14,10 +14,14 @@ const initialState = {
 
 function reducer(state, action) {
     switch (action.type) {
-        case "todo/getAll":
-            return {...state, todos: action.payload};
         case "todo/loading":
             return {...state, isLoading: action.payload};
+        case "todo/status":
+            return {...state, status: action.payload};
+        case "todo/error":
+            return {...state, error: action.payload};
+        case "todo/getAll":
+            return {...state, todos: action.payload};
         default:
             return state;
     }
@@ -29,7 +33,9 @@ function TodoProvider({children}) {
         <TodoContext.Provider value={{
             dispatch: dispatch,
             todos: state.todos,
-            isLoading: state.isLoading
+            isLoading: state.isLoading,
+            status: state.status,
+            error: state.error
         }}>
             {children}
         </TodoContext.Provider>
