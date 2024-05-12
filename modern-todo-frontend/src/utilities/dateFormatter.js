@@ -1,4 +1,4 @@
-﻿import {format} from 'date-fns';
+﻿import {format, formatDistanceToNow } from 'date-fns';
 
 function formatDate(rawDate) {
     const parsedDate = new Date(rawDate);
@@ -6,4 +6,8 @@ function formatDate(rawDate) {
     return formattedDate;
 }
 
-export {formatDate};
+function formatTimeDuration(date){
+    return  formatDistanceToNow(new Date(date),{addSuffix: true});
+}
+
+export {formatDate, formatTimeDuration};

@@ -12,7 +12,7 @@
 } from '@mantine/core';
 import {IconHeart, IconBookmark, IconShare} from '@tabler/icons-react';
 import "../../index.css";
-import {formatDate} from "../../utilities/dateFormatter.js";
+import {formatDate, formatTimeDuration} from "../../utilities/dateFormatter.js";
 
 function TodoItem({todo}) {
     const theme = useMantineTheme();
@@ -27,7 +27,7 @@ function TodoItem({todo}) {
             </Card.Section>
 
             <Badge w="fit-content" variant="light">
-                {todo.dueDate !== null ? formatDate(todo.dueDate) : ""}
+                Due Date: {todo.dueDate !== null ? formatDate(todo.dueDate) : ""}
             </Badge>
 
             <Text fw={700} className={"title"} mt="xs">
@@ -38,15 +38,21 @@ function TodoItem({todo}) {
             <Chip checked={todo.isCompleted} color="green" variant="light">{todo.isCompleted ? "Completed" : "Not Yet"}</Chip>
             <Group mt="lg">
                 <div>
-                    <Text fz="xs" c="dimmed">
-                        {formatDate(todo.updatedDate)}
+                    <Text fz="xs" c="dimmed"> Created: 
+                        {formatTimeDuration(todo.createdDate)}
+                    </Text>
+                </div>
+                |
+                <div>
+                    <Text fz="xs" c="dimmed"> Last modified:
+                        {formatTimeDuration(todo.updatedDate)}
                     </Text>
                 </div>
             </Group>
             <Card.Section className={"footer"}>
                 <Group justify="space-between">
                     <Text fz="xs" c="dimmed">
-                        733 people liked this
+                       Actions
                     </Text>
                     <Group gap={0}>
                         <ActionIcon variant="subtle" color="gray">
