@@ -4,19 +4,8 @@ import {useQuery} from "@tanstack/react-query";
 import {useEffect, useState} from "react";
 import NotificationArea from "../../ui/NotificationArea.jsx";
 import TodoItem from "./TodoItem.jsx";
-import {
-    Container,
-    SimpleGrid,
-    TextInput,
-    ActionIcon,
-    useMantineTheme,
-    rem,
-    Space,
-    Kbd,
-    Badge,
-    Autocomplete, Select, Button, Grid, Stack
-} from "@mantine/core";
-import {IconSearch, IconArrowRight} from '@tabler/icons-react';
+import {Container, SimpleGrid, TextInput, rem, Space, Kbd, Select, Button, Grid,} from "@mantine/core";
+import {IconSearch} from '@tabler/icons-react';
 import {Controller, Form, useForm} from "react-hook-form";
 import AlertArea from "../../ui/AlertArea.jsx";
 import EmptyContent from "../../ui/EmptyContent.jsx";
@@ -28,15 +17,16 @@ let sortOrder = "ASC";
 let filterQuery = "";
 
 function TodoList() {
-    // Define a state to manage sort column
+    // Define states to manage filter, sort, pagination
     const [sortColumnValue, setSortColumnValue] = useState(sortColumn);
     const [sortOrderValue, setSortOrderValue] = useState(sortOrder);
+
 
     // Invoke todo context hook 
     const {dispatch} = useTodoContext();
 
     // Use react form hook for filtering and searching 
-    const {handleSubmit, register, formState, control} = useForm();
+    const {handleSubmit, register, control} = useForm();
 
     // Use the query hook to define the query key and the function 
     const query = useQuery({
@@ -53,6 +43,7 @@ function TodoList() {
         error
     } = query;
 
+    
     async function getTodos() {
         const getAllTodosUrl = `/getAll?PageIndex=${pageIndex}&PageSize=${pageSize}&SortColumn=${sortColumnValue}&SortOrder=${sortOrderValue}&FilterQuery=${filterQuery}`;
         const accessToken = localStorage.getItem("accessToken");
@@ -77,8 +68,7 @@ function TodoList() {
         }
     }, [dispatch, error, todos, isFetched, isSuccess, isError, isFetching]);
 
-    async function onTodoSearchOrFilter(data) {
-        console.log(data)
+     function onTodoSearchOrFilter(data) {
         if (data.filterQuery !== null) {
             filterQuery = data.filterQuery;
             return query.refetch();
@@ -88,7 +78,7 @@ function TodoList() {
             return query.refetch();
         }
         if (data.sortOrder !== null) {
-            sortOrder = data.sortOrder;
+            setSortOrderValue(() => data.sortOrder);
             return query.refetch();
         }
         return;
