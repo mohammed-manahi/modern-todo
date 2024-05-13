@@ -6,7 +6,7 @@ const TodoContext = createContext();
 
 const initialState = {
     todos: [],
-    isLoading: "",
+    isLoading: false,
     status: "",
     error: "",
 }
@@ -21,6 +21,8 @@ function reducer(state, action) {
             return {...state, error: action.payload};
         case "todo/getAll":
             return {...state, todos: action.payload};
+        case "todo/create":
+            return {...state, todos: [...state.todos, action.payload]}
         default:
             return state;
     }

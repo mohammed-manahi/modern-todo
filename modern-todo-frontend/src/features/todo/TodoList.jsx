@@ -4,11 +4,13 @@ import {useQuery} from "@tanstack/react-query";
 import {useEffect, useState} from "react";
 import NotificationArea from "../../ui/NotificationArea.jsx";
 import TodoItem from "./TodoItem.jsx";
-import {Container, SimpleGrid, TextInput, rem, Space, Kbd, Select, Button, Grid,} from "@mantine/core";
-import {IconSearch} from '@tabler/icons-react';
+import {Container, SimpleGrid, TextInput, rem, Space, Kbd, Select, Button, Grid, Text,} from "@mantine/core";
+import {IconPlus, IconSearch} from '@tabler/icons-react';
 import {Controller, Form, useForm} from "react-hook-form";
 import AlertArea from "../../ui/AlertArea.jsx";
 import EmptyContent from "../../ui/EmptyContent.jsx";
+import {useDisclosure} from "@mantine/hooks";
+import TodoCreate from "./TodoCreate.jsx";
 
 let pageIndex = 0;
 let pageSize = 10;
@@ -21,6 +23,8 @@ function TodoList() {
     const [sortColumnValue, setSortColumnValue] = useState(sortColumn);
     const [sortOrderValue, setSortOrderValue] = useState(sortOrder);
 
+    // Manage modal toggle for to do create
+    const [isModalOpened, {open: openModal, close: closeModal}] = useDisclosure(false);
 
     // Invoke todo context hook 
     const {dispatch} = useTodoContext();
@@ -43,7 +47,7 @@ function TodoList() {
         error
     } = query;
 
-    
+
     async function getTodos() {
         const getAllTodosUrl = `/getAll?PageIndex=${pageIndex}&PageSize=${pageSize}&SortColumn=${sortColumnValue}&SortOrder=${sortOrderValue}&FilterQuery=${filterQuery}`;
         const accessToken = localStorage.getItem("accessToken");
@@ -68,7 +72,7 @@ function TodoList() {
         }
     }, [dispatch, error, todos, isFetched, isSuccess, isError, isFetching]);
 
-     function onTodoSearchOrFilter(data) {
+    function onTodoSearchOrFilter(data) {
         if (data.filterQuery !== null) {
             filterQuery = data.filterQuery;
             return query.refetch();
@@ -146,11 +150,14 @@ function TodoList() {
                 </Grid>
             </Form>
             <Space h={"xl"}/>
+            <Button onClick={openModal} rightSection={<IconPlus size={14}/>}>New</Button>
+            <Space h={"xl"}/>
             {todos.length === 0 ? <EmptyContent/> :
                 <SimpleGrid cols={{base: 1, sm: 2}}>
                     {todos.map((todo) => <TodoItem todo={todo} key={todo.id}/>)}
                 </SimpleGrid>
             }
+            {isModalOpened && <TodoCreate isModalOpened={isModalOpened} openModal={openModal} closeModal={closeModal}/>}
         </Container>
     );
 }
