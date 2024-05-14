@@ -1,20 +1,7 @@
-﻿import {
-    Card,
-    Image,
-    ActionIcon,
-    Group,
-    Text,
-    Badge,
-    useMantineTheme,
-    rem,
-    Chip,
-    Space,
-    Drawer,
-    Button
-} from '@mantine/core';
+﻿import {Card, Image, ActionIcon, Group, Text, Badge, useMantineTheme, rem, Chip, Space,} from '@mantine/core';
 import {useDisclosure} from '@mantine/hooks';
 import {IconPencil, IconEye, IconTrash} from '@tabler/icons-react';
-import "../../index.css";
+import classes from "../../ui/Card.module.css"
 import {formatDate, formatTimeDuration} from "../../utilities/dateFormatter.js";
 import TodoDetails from "./TodoDetails.jsx";
 
@@ -29,7 +16,7 @@ function TodoItem({todo}) {
 
     return (
         <>
-            <Card withBorder padding="lg" radius="md" className={"card"}>
+            <Card withBorder padding="lg" radius="md" className={classes.card}>
                 <Card.Section mb="sm">
                     <Image
                         src="https://images.unsplash.com/photo-1477554193778-9562c28588c0?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
@@ -42,7 +29,7 @@ function TodoItem({todo}) {
                     Due Date: {todo.dueDate !== null ? formatDate(todo.dueDate) : ""}
                 </Badge>
 
-                <Text fw={700} className={"title"} mt="xs">
+                <Text fw={700} className={classes.title} mt="xs">
                     {todo.name}
                 </Text>
                 <Text fw={500}>{todo.description}</Text>
@@ -62,7 +49,7 @@ function TodoItem({todo}) {
                         </Text>
                     </div>
                 </Group>
-                <Card.Section className={"footer"}>
+                <Card.Section className={classes.footer}>
                     <Group justify="space-between">
                         <Text fz="xs" c="dimmed">
                             Actions
