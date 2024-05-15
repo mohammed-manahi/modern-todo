@@ -3,10 +3,14 @@ import {NavLink, useNavigate} from "react-router-dom";
 import {notifications} from "@mantine/notifications";
 import classes from "../../ui/Layout.module.css";
 import {Button, Space} from "@mantine/core";
+import {useQueryClient} from "@tanstack/react-query";
 
 function AccountLogout() {
     const {email, dispatch} = useAccountContext();
     const navigate = useNavigate();
+    
+    // Invoke react query client to invalidate caches on user logout 
+    const queryClient = useQueryClient();
     
     async function onLogoutAccount() {
         try {
@@ -21,6 +25,7 @@ function AccountLogout() {
                 localStorage.removeItem('accessToken')
                 dispatch({type: "account/logout"})
                 navigate("/", {state: "Logged out"});
+                await queryClient.invalidateQueries({queryKey: ["todo"]});
             } else {
                 const errorData = await response.json();
                 const errorKeys = Object.keys(errorData.errors);
