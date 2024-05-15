@@ -23,6 +23,14 @@ function reducer(state, action) {
             return {...state, todos: action.payload};
         case "todo/create":
             return {...state, todos: [...state.todos, action.payload]};
+        case "todo/update":
+            const updatedTodoIndex = state.todos.findIndex((todo) => todo.id === action.payload.id);
+            if (updatedTodoIndex !== -1) {
+                const updatedTodos = [...state.todos];
+                updatedTodos[updatedTodoIndex] = action.payload;
+                return { ...state, todos: updatedTodos };
+            }
+            return state;
         case "todo/delete":
             return {...state, todos: state.todos.filter((todo) => todo.id !== action.payload),};
         default:

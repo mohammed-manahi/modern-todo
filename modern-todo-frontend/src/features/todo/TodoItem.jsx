@@ -5,6 +5,7 @@ import classes from "../../ui/Card.module.css"
 import {formatDate, formatTimeDuration} from "../../utilities/dateFormatter.js";
 import TodoDetails from "./TodoDetails.jsx";
 import TodoDelete from "./TodoDelete.jsx";
+import TodoUpdate from "./TodoUpdate.jsx";
 
 function TodoItem({todo}) {
     const theme = useMantineTheme();
@@ -13,7 +14,7 @@ function TodoItem({todo}) {
     const [isDrawerOpened, {open: openDrawer, close: closeDrawer}] = useDisclosure(false);
 
     // Manage modal toggle for to do create and update 
-    // const [isModalOpened, {open: openModal, close: closeModal}] = useDisclosure(false);
+    const [isUpdateModalOpened, {open: openUpdateModal, close: closeUpdateModal}] = useDisclosure(false);
 
     // Manage dialogue for to do delete confirmation
     const [isDialogueOpened, {open: toggleDialogue, close: closeDialogue}] = useDisclosure(false);
@@ -66,7 +67,7 @@ function TodoItem({todo}) {
                                     stroke={1.5}
                                 />
                             </ActionIcon>
-                            <ActionIcon variant="subtle" color="gray">
+                            <ActionIcon variant="subtle" color="gray" onClick={openUpdateModal}>
                                 <IconPencil
                                     style={{width: rem(20), height: rem(20)}}
                                     color={theme.colors.yellow[6]}
@@ -90,6 +91,9 @@ function TodoItem({todo}) {
             {isDialogueOpened &&
                 <TodoDelete todo={todo} key={todo.id} isDialogueOpened={isDialogueOpened}
                             toggleDialogue={toggleDialogue} closeDialogue={closeDialogue}/>}
+            {isUpdateModalOpened &&
+                <TodoUpdate todo={todo} key={todo.id} isUpdateModalOpened={isUpdateModalOpened} openUpdateModal={openUpdateModal}
+                            closeUpdateModal={closeUpdateModal}/>}
         </>
     );
 }
