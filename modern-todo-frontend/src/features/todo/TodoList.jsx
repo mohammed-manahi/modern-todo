@@ -24,7 +24,7 @@ function TodoList() {
     const [sortOrderValue, setSortOrderValue] = useState(sortOrder);
 
     // Manage modal toggle for to do create
-    const [isModalOpened, {open: openModal, close: closeModal}] = useDisclosure(false);
+    const [isCreateModalOpened, {open: openCreateModal, close: closeCreateModal}] = useDisclosure(false);
 
     // Invoke todo context hook 
     const {dispatch} = useTodoContext();
@@ -150,14 +150,16 @@ function TodoList() {
                 </Grid>
             </Form>
             <Space h={"xl"}/>
-            <Button onClick={openModal} rightSection={<IconPlus size={14}/>}>New</Button>
+            <Button onClick={openCreateModal} rightSection={<IconPlus size={14}/>}>New</Button>
             <Space h={"xl"}/>
             {todos.length === 0 ? <EmptyContent/> :
                 <SimpleGrid cols={{base: 1, sm: 2}}>
                     {todos.map((todo) => <TodoItem todo={todo} key={todo.id}/>)}
                 </SimpleGrid>
             }
-            {isModalOpened && <TodoCreate isModalOpened={isModalOpened} openModal={openModal} closeModal={closeModal}/>}
+            {isCreateModalOpened &&
+                <TodoCreate isCreateModalOpened={isCreateModalOpened} openCreateModal={openCreateModal}
+                            closeCreateModal={closeCreateModal}/>}
         </Container>
     );
 }

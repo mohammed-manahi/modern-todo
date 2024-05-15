@@ -22,7 +22,9 @@ function reducer(state, action) {
         case "todo/getAll":
             return {...state, todos: action.payload};
         case "todo/create":
-            return {...state, todos: [...state.todos, action.payload]}
+            return {...state, todos: [...state.todos, action.payload]};
+        case "todo/delete":
+            return {...state, todos: state.todos.filter((todo) => todo.id !== action.payload),};
         default:
             return state;
     }
