@@ -5,21 +5,20 @@ import {useTodoContext, baseTodoUrl} from "./TodoContext.jsx";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {useNavigate} from "react-router-dom";
 import {DateTimePicker} from '@mantine/dates';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {notifications} from "@mantine/notifications";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import Spinner from "../../ui/Spinner.jsx";
+import NotificationArea from "../../ui/NotificationArea.jsx";
 
 let schema = yup.object().shape({
     name: yup.string().required("To do name is required"),
     description: yup.string().required("To do description is required"),
-    // dueDate: yup.string()
-    //     .nullable()
-    //     .matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
-    //         'Invalid JSON datetime format (YYYY-MM-DDTHH:mm:ss.SSSZ)')
 });
 
 function TodoCreate({isModalOpened, openModal, closeModal}) {
     // Invoke to do context 
-    const {dispatch, isLoading} = useTodoContext();
+    const {dispatch, isLoading, error} = useTodoContext();
 
     // Define field controller for date time picker
     const [dateTimeValue, setDateTimeValue] = useState("");
@@ -30,11 +29,17 @@ function TodoCreate({isModalOpened, openModal, closeModal}) {
     });
     const {errors} = formState;
 
-    // Invoke use navigate hook 
-    const navigate = useNavigate();
+    // Invoke react query mutation for create 
+    const queryClient = useQueryClient();
+    const mutation = useMutation({
+        mutationFn: onTodoCreate,
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["todo"]});
+        },
+    });
 
     async function onTodoCreate(data) {
-        console.log(typeof data.isCompleted)
+        dispatch({type: "todo/loading", payload: true});
         const accessToken = localStorage.getItem("accessToken");
         const response = await fetch(`${baseTodoUrl}/create`, {
             method: "POST",
@@ -42,12 +47,32 @@ function TodoCreate({isModalOpened, openModal, closeModal}) {
             body: JSON.stringify({
                 name: data.name,
                 description: data.description,
-                dueDate: data.dueDate.toISOString(),
+                dueDate: data.dueDate ? data.dueDate.toISOString() : null,
                 isCompleted: false
             }),
         });
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        const responseData = await response.json();
+        console.log(responseData);
     }
 
+    useEffect(() => {
+        if (mutation.isSuccess) {
+            // Pass the mutation data from remote state (mutation) to ui state (todo reducer + context api )
+            dispatch({type: "todo/create", payload: mutation.data});
+            dispatch({type: "todo/loading", payload: false});
+        } else if (mutation.isPending) {
+            dispatch({type: "todo/loading", payload: true});
+        } else {
+            dispatch({type: "todo/error", payload: error});
+            dispatch({type: "todo/loading", payload: false});
+        }
+    }, [dispatch, error, mutation]);
+
+    if (isLoading) return <Spinner/>
+    if (error) return <NotificationArea title={"Error"} color={"red"} message={error.message}/>
     return (
         <Modal size="lg" centered overlayProps={{backgroundOpacity: 0.55, blur: 3,}} opened={isModalOpened}
                onClose={closeModal}
